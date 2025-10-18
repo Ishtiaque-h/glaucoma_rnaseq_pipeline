@@ -1,0 +1,35 @@
+# System and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env/
+
+# RNA-seq data (large files)
+data/raw_fastq/
+data/trimmed_fastq/
+data/reference/
+data/metadata/*.csv
+
+# Outputs and logs
+results/
+logs/
+*.out
+*.err
+*.log
+
+# Jupyter / temp
+.ipynb_checkpoints/
+*.ipynb
+*.html
+
+# Conda and cache files
+*.snakemake/
+*.nextflow/
+*.conda/
