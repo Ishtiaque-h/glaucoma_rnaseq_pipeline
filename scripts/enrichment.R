@@ -75,6 +75,7 @@ rnk <- sort(rnk, decreasing = TRUE)
 # --------------------------
 ego_bp <- enrichGO(gene = sig$ENTREZID, OrgDb = org.Mm.eg.db, keyType="ENTREZID",
                    ont="BP", pAdjustMethod="BH", readable=TRUE)
+saveRDS(ego_bp, file.path(outdir, "ORA_GO_BP.rds"))
 ego_mf <- enrichGO(gene = sig$ENTREZID, OrgDb = org.Mm.eg.db, keyType="ENTREZID",
                    ont="MF", pAdjustMethod="BH", readable=TRUE)
 ego_cc <- enrichGO(gene = sig$ENTREZID, OrgDb = org.Mm.eg.db, keyType="ENTREZID",
@@ -116,10 +117,20 @@ write.csv(as.data.frame(gse_kegg), file.path(outdir, "GSEA_KEGG.csv"),    row.na
 plot_save <- function(p, name, w=8, h=6) {
   ggsave(filename = file.path(outdir, name), plot = p, width = w, height = h, dpi = 150)
 }
+# helper: wrap labels inside plots
+wrap_labels <- function(p, width=40){
+  p + scale_y_discrete(labels=function(x) str_wrap(x, width)) +
+    theme(axis.text.y = element_text(size=8))
+}
 
-if (nrow(as.data.frame(ego_bp)) > 0) plot_save(dotplot(ego_bp, showCategory=20), "ORA_GO_BP_dotplot.png")
-if (nrow(as.data.frame(ekegg))  > 0) plot_save(dotplot(ekegg,  showCategory=20), "ORA_KEGG_dotplot.png")
-if (nrow(as.data.frame(ereact)) > 0) plot_save(dotplot(ereact, showCategory=20), "ORA_Reactome_dotplot.png")
+if (nrow(as.data.frame(ego_bp)) > 0)
+  plot_save(wrap_labels(dotplot(ego_bp, showCategory=20)), "ORA_GO_BP_dotplot.png")
+
+if (nrow(as.data.frame(ekegg)) > 0)
+  plot_save(wrap_labels(dotplot(ekegg, showCategory=20)), "ORA_KEGG_dotplot.png")
+
+if (nrow(as.data.frame(ereact)) > 0)
+  plot_save(wrap_labels(dotplot(ereact, showCategory=20)), "ORA_Reactome_dotplot.png")
 
 if (nrow(as.data.frame(gse_bp))   > 0) plot_save(gseaplot2(gse_bp,   geneSetID = gse_bp@result$ID[1]), "GSEA_GO_BP_leading_edge.png", w=9)
 if (nrow(as.data.frame(gse_kegg)) > 0) plot_save(gseaplot2(gse_kegg, geneSetID = gse_kegg@result$ID[1]), "GSEA_KEGG_leading_edge.png", w=9)
