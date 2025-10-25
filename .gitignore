@@ -16,6 +16,7 @@ data/raw_fastq/
 data/trimmed_fastq/
 data/reference/
 data/metadata/*.csv
+references/
 
 # Outputs and logs
 results/
