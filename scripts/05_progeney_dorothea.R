@@ -1,10 +1,11 @@
 #!/usr/bin/env Rscript
-BiocManager::install("progeny")
-BiocManager::install("dorothea")
-BiocManager::install("viper")
+#BiocManager::install("progeny")
+#BiocManager::install("dorothea")
+#BiocManager::install("viper")
 suppressPackageStartupMessages({
+  library(BiocParallel)
   library(progeny); library(dorothea); library(viper)
-  library(readr); library(dplyr); library(tibble)
+  library(readr); library(dplyr);  library(tibble)
   library(org.Mm.eg.db); library(AnnotationDbi)
 })
 
@@ -63,8 +64,7 @@ tf_activity <- viper(
   expr_sym,
   regulons,
   verbose      = FALSE,
-  eset.filter  = FALSE,
-  scale        = TRUE
+  eset.filter  = FALSE
 )
 
 write_tsv(
