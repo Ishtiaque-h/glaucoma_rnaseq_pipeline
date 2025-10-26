@@ -1,6 +1,7 @@
 # install.packages("BiocManager")
 #BiocManager::install(c("tximport","DESeq2","readr"))
-BiocManager::install(c("apeglm"))
+#BiocManager::install(c("apeglm"))
+library(apeglm)
 library(tximport)
 library(readr)
 library(DESeq2)
@@ -22,7 +23,12 @@ txi <- tximport(files, type="salmon", tx2gene=tx2gene,
                 countsFromAbundance="lengthScaledTPM",ignoreTxVersion = TRUE)
 
 # 5) choose a clean first contrast: IOP vs CTRL (same age/platform if you want to be strict)
-samples$condition <- factor(samples$condition, levels=c("control","IOP"))
+samples$condition <- ifelse(
+  grepl("control", paste(samples$treatment, samples$experiment_title), ignore.case = TRUE), "control",
+  ifelse(grepl("\\bIOP\\b", paste(samples$treatment, samples$experiment_title), ignore.case = TRUE), "IOP", NA)
+)
+samples$condition <- factor(samples$condition, levels = c("control","IOP"))
+write.csv(samples, "SRP394552_metadata.csv", row.names = FALSE)
 dds <- DESeqDataSetFromTximport(txi, colData=samples, design = ~ condition)
 
 # (optional) filter low counts
