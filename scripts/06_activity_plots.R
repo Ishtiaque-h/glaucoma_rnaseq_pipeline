@@ -10,9 +10,9 @@ suppressPackageStartupMessages({
 # ---------------------------
 meta_file <- "data/metadata/samples.txt"
 files <- list(
-  DoRothEA = "results/functional/DoRothEA_TFactivity.tsv",
-  GSVA     = "results/functional/GSVA_hallmark_scores.tsv",
-  PROGENy  = "results/functional/PROGENy_scores.tsv"
+  DoRothEA = "results/pathways/DoRothEA_TFactivity.tsv",
+  GSVA     = "results/pathways/GSVA_hallmark_scores.tsv",
+  PROGENy  = "results/pathways/PROGENy_scores.tsv"
 )
 outdir <- "results/plots/activity"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
