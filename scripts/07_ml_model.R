@@ -1,9 +1,8 @@
 #!/usr/bin/env Rscript
-#BiocManager::install("tidyverse")
 #BiocManager::install("glmnet")
 #BiocManager::install("ranger")
 #BiocManager::install("pROC")
-
+BiocManager::install("tidyverse")
 suppressPackageStartupMessages({
   library(tidyverse)
   library(glmnet)
