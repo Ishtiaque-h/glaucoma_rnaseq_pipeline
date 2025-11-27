@@ -5,7 +5,7 @@
 
 ## Project Overview
 
-This repository contains an end-to-end RNA-seq + machine learning pipeline (QC → quantification → DE → pathway analysis → ML) built around a public mouse retina dataset (GEO: **GSE212186**) that models:
+This repository contains a portfolio-grade, end-to-end RNA-seq + machine learning pipeline **(QC → quantification → DE → pathway analysis → ML)** built around a public mouse retina dataset (GEO: **GSE212186**) that models:
 - **Physiological aging** of the retina, and  
 - **Glaucoma-like stress** via unilateral intraocular pressure (IOP) elevation.
 
@@ -14,17 +14,18 @@ This repository contains an end-to-end RNA-seq + machine learning pipeline (QC �
   
   This run focuses specifically on practicing and demonstrating a complete RNA-seq analysis pipeline:
   
-  >- **Raw data → QC → Salmon → tximport → DESeq2 → pathway/TF scores → ML (logistic, RF) → nested CV.**\
-  >- **Differential expression (DE) and classification of IntraOcular Pressure (IOP)–elevated retinas (glaucoma) vs contralateral control retinas.**\
-  >- **Derive **biologically meaningful features** (pathway / TF / signalling activities) from the gene expression data.**\
+  >- **Raw data → QC → Salmon → tximport → DESeq2 → pathway/TF scores → ML (logistic, RF) → nested CV.**
+  >- **Differential expression (DE) and classification of IntraOcular Pressure (IOP)–elevated retinas (glaucoma) vs contralateral control retinas.**
+  >- **Derive **biologically meaningful features** (pathway / TF / signalling activities) from the gene expression data.**
   >- **Train **machine learning classifiers** (regularized logistic regression and random forest) to distinguish **IOP vs control** using **nested cross-validation**.**
 
 - **Final Run**: Focuses specifically on clearly separating samples by group to find Glaucoma-like stress effect while aging (young vs old) and IOP stress elevation effect at each age separately.
 
-**Final Goal:** 
+**Final Goal**:
 - Adjust our metadata into different groups other than only IOP (glaucoma) vs control to tell a clear biological story:
-  >- **Physiological aging effect (old vs young) in retina.**\
-  >- **Glaucoma-like stress effect (IOP vs control) separately in young and old.**\
+  
+  >- **Physiological aging effect (old vs young) in retina.**
+  >- **Glaucoma-like stress effect (IOP vs control) separately in young and old.**
 
 All steps are implemented with the mindset of an educational, **portfolio-garde** project: clear directory structure and scripts; documented analysis & decisions.
 
@@ -56,24 +57,27 @@ Mouse retina bulk RNA-seq with unilateral IOP elevation (constant 30 mmHg for 1 
 
 ---
 
-### Download & QC**
+## Download & QC
+
   -	Fetch reads (e.g., SRA Toolkit → FASTQ) into data/raw_fastq/.
 
 ---
 
-### Metadata Curation
+## Metadata Curation
 
-**First Run***:
+**First Run**:
   - samples.txt created with a sample column (sample IDs) and a condition column (IOP, control) from SraRunTable.csv.
   - We mapped any examination or treatment of “iop/treated” → IOP, “control/untreated/ctrl” → control.
 
 ---
 
-### QC → Trimming → QC
+## QC → Trimming → QC
+
   - Raw FASTQ files (20 RNA-seq runs, paired-end) were assessed using FastQC and MultiQC.
- 	  - FastQC: per-sample quality metrics
-    - MultiQC: aggregates across all samples
-  - Output: HTML reports, per-base quality, GC content, adapter content
+ 	  - **FastQC:** per-sample quality metrics
+    - **MultiQC:** aggregates across all samples
+      
+  - **Output:** HTML reports, per-base quality, GC content, adapter content
   - Overall high per-base quality (Phred > 30 across most of each read), with a mild drop at the 3′ ends typical for Illumina sequencing.
   - Noticeable adapter contamination and several overrepresented sequences consistent with Illumina adapters and poly(A/T) tails.
   - Systematic per-base sequence content bias in the first ~10 bp, likely due to random hexamer priming and residual adapter/primer sequence.
@@ -91,7 +95,8 @@ All QC reports (FastQC, MultiQC, and fastp HTML reports) are stored in results/q
 
 ---
 
-### Alignment + Quantification (Salmon)
+## Alignment + Quantification (Salmon)
+
   - We switched from STAR/featureCounts → Salmon quasi-mapping for pseudoalignment & quantification
   - **Goal**: Get robust gene-level abundances fast so we can move on to DE and pathway analysis. Quantify transcript abundance using pseudoalignment against a reference transcriptome.
 .
@@ -110,7 +115,8 @@ All Outputs under results/salmon/.
 
 ---
 
-### Import & DE (first run: IOP vs control)
+## Import & DE (first run: IOP vs control)
+
 - Each gene can have multiple transcript isoforms. However, most biological questions (like glaucoma vs control differences) are at the gene level. Hence, we aggregate **transcript abundances per gene** using:
   -	**tximport** (R package) → Reads in all quant.sf files.
   -	**Tx2Gene** mapping file → Maps transcript IDs → gene IDs.
@@ -132,12 +138,14 @@ All Outputs under results/salmon/.
  
 ---
 
-### Comprehensive Functional Enrichment Analysis: Gene Ontology and Pathways  
+## Comprehensive Functional Enrichment Analysis: Gene Ontology and Pathways 
+
 - After DESeq2, we have a list of genes with log₂ fold change and adjusted p-values (FDR). We'll use these for:
   -	**Gene Ontology (GO) enrichment**: Over-Representation Analysis (ORA) of GO terms, specifically for the three main categories:
     -	Biological Process (BP),
     -	Molecular Function (MF),
-    -	Cellular Component (CC),
+    -	Cellular Component (CC)
+      
   -	**Pathway Analysis**: Reactome, KEGG.
   -	Biological interpretation (e.g., oxidative stress pathways in glaucoma).
 
@@ -145,48 +153,35 @@ This is where **data science meets biology**.
 
 ---
 
-### Pathway / TF / signalling activity scoring
- - From VST-normalized expression, we compute activity tables:
-   - **DoRothEA:** TF activity scores per sample.  
-   - **GSVA:** Hallmark gene set activity scores per sample.  
-   - **PROGENy:** Signalling pathway activity scores per sample.
+## Pathway / TF / signalling activity scoring
+
+- From VST-normalized expression, we compute activity tables:
+
+  - **DoRothEA:** TF activity scores per sample.  
+  - **GSVA:** Hallmark gene set activity scores per sample.  
+  - **PROGENy:** Signalling pathway activity scores per sample.
  
 Each resulting file is a matrix of features × samples and is used as input to the ML step.
 
 ---
 
-### Machine Learning (1st run: IOP (Glaucoma) vs control classification)
-- Use the activity matrices as input features to classify **IOP vs control** retinas.
-- Models: Elastic-net logistic regression with α–λ tuning (glmnet), Random Forest with permutation importance (ranger).
-- Repeated CV (5×5) for model development and feature importance.
--	**nested cross-validation**:
-  -	Hyperparameters tuning (5x5folds inner CV).  
-  - Unbiased estimate of predictive performance (5-fold outer CV).
--	Feature stability (RF) via repeated subsampling.
+## Machine Learning  
+
+- **First Run**: IOP (Glaucoma) vs control classification
+  - Use the activity matrices as input features to classify **IOP vs control** retinas.
+  - Models: Elastic-net logistic regression with α–λ tuning (glmnet), Random Forest with permutation importance (ranger).
+  - Repeated CV (5×5) for model development and feature importance.
+  -	**nested cross-validation**:
+    -	Hyperparameters tuning (5x5folds inner CV).
+    - Unbiased estimate of predictive performance (5-fold outer CV).
+    
+  -	Feature stability (RF) via repeated subsampling.
 
 ---
 
-
-## 📦 Getting Started
-
-### Clone the Repo
-
-git clone https://github.com/yourusername/glaucoma-rnaseq-pipeline.git
-cd glaucoma-rnaseq-pipeline
-
-
-### Set Up Environment
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-### Download Data
-
-bash scripts/download_fastq.sh data/metadata/GSE212186_metadata.csv
-
-### Repository structure
-.
+## Repository structure
+```text
+glaucoma_rnaseq_pipeline/
 ├── data/
 │   ├── raw_fastq/            # FASTQ or SRA-derived reads
 │   ├── metadata/             # samples.txt, SRP394552_metadata.csv, metadata_deseq2.csv metadata files
@@ -203,10 +198,25 @@ bash scripts/download_fastq.sh data/metadata/GSE212186_metadata.csv
 │   └── nested_cv/            # nested CV results
 ├── scripts/                  # python, bash, and R scripts
 └── README.md
+```
 
+---
+
+## Clone the Repo
+```bash
+git clone https://github.com/yourusername/glaucoma-rnaseq-pipeline.git
+cd glaucoma-rnaseq-pipeline
+```
+---
+
+## Acknowledgement
+
+Used AI tools (ChatGPT & Gemini) to plan & design project; improve & test code; prepare & refine readme.
+
+---
 
 ## 🧠 Author
-Md Ishtiaque Hossain
-MSc Candidate, Computer and Information Sciences
-University of Delaware
-LinkedIn | GitHub
+Md Ishtiaque Hossain \
+MSc Candidate, Computer and Information Sciences \
+University of Delaware \
+[LinkedIn](linkedin.com/in/ishtiaque-h) | [GitHub](https://github.com/Ishtiaque-h)
