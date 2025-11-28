@@ -169,10 +169,12 @@ Each resulting file is a matrix of features × samples and is used as input to t
 
 - **First Run**: IOP (Glaucoma) vs control classification
   - Use the activity matrices as input features to classify **IOP vs control** retinas.
-  - Models: Elastic-net logistic regression with α–λ tuning (glmnet), Random Forest with permutation importance (ranger).
-  - Repeated CV (5×5): Pooled CV curves + 95% CI for model evaluation and feature importance.
-  -	**nested cross-validation**: Unbiased generalization
-    -	Hyperparameters tuning (5x5folds inner CV).
+  - **Models**: Elastic-net logistic regression with α–λ tuning (glmnet), Random Forest with permutation importance (ranger).
+  - **Repeated CV (5×5)**: Pooled CV curves + 95% CI for model evaluation and feature importance.
+  - **Ensemble**: An RF ensemble combining GSVA+PROGENy 
+  -	**Nested cross-validation**: Unbiased generalization
+    
+    - Hyperparameters tuning (5x5folds inner CV).
     - Unbiased estimate of predictive performance (5-fold outer CV).
     - Each block includes (i) **nested outer ROC**, (ii) **fold AUCs**, (iii) **mean±sd AUC**, (iv) **best inner-CV tunes**, (v) **outer predictions**.
       
@@ -195,32 +197,18 @@ Each resulting file is a matrix of features × samples and is used as input to t
 
 ## Key Results
 
-```markdown
-
-Feature space	Model	Repeated-CV AUC	Nested-CV AUC	Artifacts
-DoRothEA (TF activity)	glmnet	0.809	0.830	ROC (repeated), ROC (nested), 95% CI ROC
-RF	0.823	0.825	ROC (repeated), ROC (nested), 95% CI ROC
-GSVA (MSigDB Hallmarks)	glmnet	0.833	0.780	ROC (repeated), ROC (nested), 95% CI ROC
-RF	0.918	0.910	ROC (repeated), ROC (nested), 95% CI ROC
-PROGENy (pathway activities)	glmnet	0.501	0.360	ROC (repeated), ROC (nested), 95% CI ROC
-RF	0.841	0.915	ROC (repeated), ROC (nested), 95% CI ROC
-GSVA + PROGENy (meta-RF)	RF ensemble	0.921 (95% CI 0.900–0.943)	—	ROC, summary
+```table
+| Feature space                  | Model        | Repeated-CV AUC                | Nested-CV AUC | Artifacts                                   |
+|--------------------------------|--------------|---------------------------------|---------------|---------------------------------------------|
+| DoRothEA (TF activity)         | glmnet       | 0.809                           | 0.830         | ROC (repeated), ROC (nested), 95% CI ROC    |
+|                                | RF           | 0.823                           | 0.825         | ROC (repeated), ROC (nested), 95% CI ROC    |
+| GSVA (MSigDB Hallmarks)        | glmnet       | 0.833                           | 0.780         | ROC (repeated), ROC (nested), 95% CI ROC    |
+|                                | RF           | 0.918                           | 0.910         | ROC (repeated), ROC (nested), 95% CI ROC    |
+| PROGENy (pathway activities)   | glmnet       | 0.501                           | 0.360         | ROC (repeated), ROC (nested), 95% CI ROC    |
+|                                | RF           | 0.841                           | 0.915         | ROC (repeated), ROC (nested), 95% CI ROC    |
+| GSVA + PROGENy (meta-RF)       | RF ensemble  | 0.921 (95% CI 0.900–0.943)      | —             | ROC, summary                                |
 ```
-
-
-
-```
-Feature space	Model	Repeated-CV AUC	Nested-CV AUC	Artifacts
-DoRothEA (TF activity)	glmnet	0.809	0.830	ROC (repeated), ROC (nested), 95% CI ROC
-	RF	0.823	0.825	ROC (repeated), ROC (nested), 95% CI ROC
-GSVA (MSigDB Hallmarks)	glmnet	0.833	0.780	ROC (repeated), ROC (nested), 95% CI ROC
-	RF	0.918	0.910	ROC (repeated), ROC (nested), 95% CI ROC
-PROGENy (pathway activities)	glmnet	0.501	0.360	ROC (repeated), ROC (nested), 95% CI ROC
-	RF	0.841	0.915	ROC (repeated), ROC (nested), 95% CI ROC
-GSVA + PROGENy (meta-RF)	RF ensemble	0.921 (95% CI 0.900–0.943)	—	ROC, summary
-Takeaways. Nested-CV confirms strong generalization for GSVA-RF (~0.91 AUC) and PROGENy-RF (~0.92 AUC). Linear models underperform on PROGENy → signal is non-linear. A simple RF ensemble of GSVA+PROGENy reaches AUC ≈ 0.921.
-
-```
+**Takeaways**: Nested-CV confirms strong generalization for GSVA-RF (~0.91 AUC) and PROGENy-RF (~0.92 AUC). Linear models underperform on PROGENy → signal is non-linear. A simple RF ensemble of GSVA+PROGENy reaches AUC ≈ 0.921.
 
 ---
 
